@@ -30,6 +30,8 @@ e o projeto segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - **CI (GitHub Actions)**: corrige `npm ci` no Ubuntu/Windows/macOS ao fixar `@emnapi/core`
   e `@emnapi/runtime` em `devDependencies` e usar **Node.js 22** no workflow (Vitest /
   pacotes WASM exigiam lock/npm compatível).
+- **Versão na UI**: lê sempre do `package.json` do projeto (via `electron/main.cjs`), para
+  `npm start` / IDEs não mostrarem um número desatualizado por causa do ` cwd`.
 
 ### Distribuído
 

@@ -13,6 +13,22 @@ const path = require("node:path");
 const fs  = require("node:fs");
 const { appendAppLog } = require("./file-logger.cjs");
 
+/**
+ * Versão exibida e usada na checagem de updates.
+ * `app.getVersion()` em dev pode não bater com o `package.json` (cwd / como o IDE
+ * inicia o Electron); o manifesto ao lado de `main.cjs` é a fonte de verdade.
+ */
+function versaoDoManifesto() {
+  try {
+    const pkgPath = path.join(__dirname, "..", "package.json");
+    const v = JSON.parse(fs.readFileSync(pkgPath, "utf8")).version;
+    if (typeof v === "string" && v.trim()) return v.trim();
+  } catch {
+    /* usa fallback abaixo */
+  }
+  return app.getVersion();
+}
+
 // ── caminhos persistentes ──────────────────────────────────────────────────────
 const userDataDir   = () => app.getPath("userData");
 const settingsPath  = () => path.join(userDataDir(), "settings.json");
@@ -116,7 +132,7 @@ function compararVersoes(a, b) {
  * @returns {Promise<{ok:boolean, atual?:string, ultima?:string, hasUpdate?:boolean, htmlUrl?:string, reason?:string}>}
  */
 async function checarUltimaRelease() {
-  const atual = app.getVersion();
+  const atual = versaoDoManifesto();
   try {
     const res = await fetch(GITHUB_LATEST_API, {
       headers: {
@@ -370,7 +386,7 @@ function registrarIPC() {
   });
 
   ipcMain.handle("app:info", () => ({
-    versao: app.getVersion(),
+    versao: versaoDoManifesto(),
     plataforma: process.platform,
     safeStorage: safeStorage.isEncryptionAvailable(),
     dadosUsuario: userDataDir(),
@@ -390,7 +406,7 @@ function registrarIPC() {
 
 // ── lifecycle ─────────────────────────────────────────────────────────────────
 app.whenReady().then(() => {
-  appendAppLog(app, "info", `[app] Sessão iniciada v${app.getVersion()}`, {
+  appendAppLog(app, "info", `[app] Sessão iniciada v${versaoDoManifesto()}`, {
     platform: process.platform,
     empacotado: app.isPackaged,
   });
