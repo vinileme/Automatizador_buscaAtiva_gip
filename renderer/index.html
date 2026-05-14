@@ -15,9 +15,6 @@
       <span class="glow glow-c"></span>
     </div>
 
-    <!-- Marca d'água do logo (atrás do shell, semi-transparente) -->
-    <div class="app-bg-logo" aria-hidden="true"></div>
-
     <!-- Titlebar custom (arrastável) -->
     <header class="titlebar">
       <div class="titlebar-drag"></div>
@@ -138,7 +135,7 @@
         <div class="tab" data-tab="turmas" hidden>
           <header class="tab-header">
             <h1>Turmas</h1>
-            <p>As turmas ficam salvas para a próxima execução automaticamente.</p>
+            <p>As turmas ficam salvas para a próxima execução. Use qualquer nome de projeto ou escola no segundo campo.</p>
           </header>
 
           <div class="card glass">
@@ -146,17 +143,11 @@
             <form id="form-turma" class="form-row">
               <div class="field">
                 <label for="turma-codigo">Código</label>
-                <input id="turma-codigo" type="text" inputmode="numeric" placeholder="Ex: 1558" required />
+                <input id="turma-codigo" type="text" placeholder="Ex: 1558" required autocomplete="off" spellcheck="false" />
               </div>
               <div class="field flex-1">
-                <label for="turma-empresa">Empresa</label>
-                <input id="turma-empresa" type="text" placeholder="Ex: Eurofarma" required list="empresas-sugeridas" />
-                <datalist id="empresas-sugeridas">
-                  <option value="Eurofarma"></option>
-                  <option value="TREECORP"></option>
-                  <option value="RIO PRETO"></option>
-                  <option value="SAMIRA BRANCO"></option>
-                </datalist>
+                <label for="turma-empresa">Projeto ou escola</label>
+                <input id="turma-empresa" type="text" placeholder="Digite o nome (qualquer projeto ou escola)" required autocomplete="off" spellcheck="false" />
               </div>
               <button class="btn btn-primary" type="submit">Adicionar</button>
             </form>
