@@ -102,6 +102,20 @@ button { font-family: inherit; }
   100% { transform: translate(60px, 40px) scale(1.08); }
 }
 
+/* ── Logo em marca d'água (fundo da janela) ─────────────────────────────── */
+.app-bg-logo {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image: url("./app-logo.png");
+  background-repeat: no-repeat;
+  background-position: 50% 52%;
+  /* Grande o suficiente para ler, sem dominar a UI */
+  background-size: min(78vmin, 640px);
+  opacity: 0.2;
+}
+
 /* ── Titlebar customizada (área de arraste) ───────────────────────────── */
 .titlebar {
   position: relative;
@@ -138,19 +152,21 @@ button { font-family: inherit; }
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.brand-dot {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #7C9CFF, #B388FF);
-  box-shadow: 0 0 12px rgba(124, 156, 255, 0.6);
+.brand-logo {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  object-fit: cover;
   flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12),
+              0 2px 10px rgba(0, 0, 0, 0.35);
 }
 .brand-name { overflow: hidden; text-overflow: ellipsis; }
 
 /* ── Shell ─────────────────────────────────────────────────────────────── */
 .app-shell {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: grid;
   grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
   gap: 14px;
