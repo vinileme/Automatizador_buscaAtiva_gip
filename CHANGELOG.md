@@ -7,12 +7,35 @@ e o projeto segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ## [Não publicado]
 
-### Alterado
+## [1.0.1] - 2026-05-14
 
-- CI / `electron-builder`: releases no GitHub passam a ser **publicadas**
-  (`releaseType: release`), para o app detectar atualização via `/releases/latest`.
-- Toast ao concluir automação: mensagem alinhada ao fluxo em que a planilha é
-  sempre gerada em caso de sucesso; fallback só se o caminho não vier.
+### Adicionado
+
+- **Logs em arquivo** sob `<userData>/logs` (`automatizador-AAAA-MM-DD.log`), espelho
+  do que passa pela UI.
+- Botão **Pasta de logs** ao lado do log da execução (abre o Explorer/Finder).
+- Helpers puros (`scripts/lib/gip-presencas-helpers.mjs`) e suite **Vitest**
+  (`npm test`).
+
+### Corrigido / alterado
+
+- **Planilha** sempre gravada ao concluir com sucesso; caminho sob
+  `%APPDATA%\Automatizador GIP\exports` no Windows evita falhas típicas de
+  permissão/`cwd`.
+- Turma não encontrada após retries **não interrompe** o lote: segue para a próxima
+  e marca no Excel “sem lista de chamadas”.
+- **GitHub Releases** do CI criadas já **publicadas** (`releaseType: release`) para o
+  app enxergar `/releases/latest` e avisar usuários instalados.
+- Toast de **conclusão** alinhado ao fluxo atual da planilha.
+
+### Distribuído
+
+| Plataforma | Arquivo |
+|---|---|
+| Windows x64 | `Automatizador-GIP-Setup-1.0.1.exe` |
+| macOS Apple Silicon | `Automatizador-GIP-1.0.1-arm64.dmg` |
+| macOS Intel | `Automatizador-GIP-1.0.1-x64.dmg` |
+| Linux x64 | `Automatizador-GIP-1.0.1-x86_64.AppImage` |
 
 ## [1.0.0] - 2026-05-14
 
@@ -36,8 +59,8 @@ e o projeto segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
   bolinha de aviso na sidebar + toast quando há nova versão; clique abre a página
   de download.
 - **CLI antiga preservada** (`npm run gip`) para uso via cron/terminal.
-- **Workflow do GitHub Actions** que builda **e publica** releases nos 3 SOs ao
-  empurrar uma tag `v*` (release não-rascunho para o check de atualização no app).
+- **Workflow do GitHub Actions** que builda releases nos 3 SOs ao empurrar uma
+  tag `v*`.
 
 ### Distribuído
 
@@ -48,5 +71,6 @@ e o projeto segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 | macOS Intel | `Automatizador-GIP-1.0.0-x64.dmg` |
 | Linux x64 | `Automatizador-GIP-1.0.0-x86_64.AppImage` |
 
-[Não publicado]: https://github.com/vinileme/Automatizador_buscaAtiva_gip/compare/v1.0.0...HEAD
+[Não publicado]: https://github.com/vinileme/Automatizador_buscaAtiva_gip/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/vinileme/Automatizador_buscaAtiva_gip/releases/tag/v1.0.1
 [1.0.0]: https://github.com/vinileme/Automatizador_buscaAtiva_gip/releases/tag/v1.0.0

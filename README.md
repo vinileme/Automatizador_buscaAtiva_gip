@@ -66,10 +66,10 @@ Os arquivos vão para `dist/`:
 
 | Plataforma            | Arquivo                                       | Tamanho |
 | --------------------- | --------------------------------------------- | ------- |
-| Windows x64           | `Automatizador-GIP-Setup-1.0.0.exe`           | ~85 MB  |
-| macOS Apple Silicon   | `Automatizador-GIP-1.0.0-arm64.dmg`           | ~103 MB |
-| macOS Intel           | `Automatizador-GIP-1.0.0-x64.dmg`             | ~107 MB |
-| Linux x64             | `Automatizador-GIP-1.0.0-x86_64.AppImage`     | ~112 MB |
+| Windows x64           | `Automatizador-GIP-Setup-1.0.1.exe`           | ~85 MB  |
+| macOS Apple Silicon   | `Automatizador-GIP-1.0.1-arm64.dmg`           | ~103 MB |
+| macOS Intel           | `Automatizador-GIP-1.0.1-x64.dmg`             | ~107 MB |
+| Linux x64             | `Automatizador-GIP-1.0.1-x86_64.AppImage`     | ~112 MB |
 
 ### Como instalar/usar em cada SO
 

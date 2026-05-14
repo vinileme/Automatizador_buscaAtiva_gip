@@ -1,7 +1,7 @@
 {
   "name": "automatizador-gip",
   "productName": "Automatizador GIP",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "App desktop (Electron) para automatizar a coleta de presenças no GIP/Eduquest.",
   "private": true,
   "main": "electron/main.cjs",
