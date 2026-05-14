@@ -1,0 +1,59 @@
+# Build + publica releases automaticamente quando uma tag "v*" é empurrada.
+#
+# Como usar:
+#   1) bump da "version" no package.json (ex.: 1.0.0 → 1.0.1).
+#   2) git add . && git commit -m "release v1.0.1"
+#   3) git tag v1.0.1 && git push origin main --tags
+#   → o workflow buildaria nos 3 SOs em paralelo e cria/atualiza uma
+#     Release em rascunho no GitHub com os 4 binários anexados.
+#   4) Você revisa a release no GitHub e clica em "Publish".
+
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch: # permite disparo manual a partir da aba Actions
+
+permissions:
+  contents: write # necessário pro electron-builder criar/editar Releases
+
+jobs:
+  build:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            label: Windows (x64)
+            build_args: "--win --x64"
+          - os: macos-latest
+            label: macOS (arm64 + x64)
+            build_args: "--mac --arm64 --x64"
+          - os: ubuntu-latest
+            label: Linux (x64)
+            build_args: "--linux --x64"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build & publish (${{ matrix.label }})
+        env:
+          # Token padrão do GitHub Actions com permissão de write em releases.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Pula codesign no macOS (sem Developer ID Apple pago).
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: npx electron-builder ${{ matrix.build_args }} --publish always

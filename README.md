@@ -90,37 +90,52 @@ Arch, Debian, etc.).
 > `dist:linux` podem precisar de Docker/WSL. Para uma build totalmente limpa
 > por SO, prefira rodar cada `dist:*` na máquina daquele SO.
 
-## Como publicar uma nova versão
+## Como publicar uma nova versão (automatizado)
 
-O app consulta automaticamente o GitHub Releases do repositório
-[vinileme/Automatizador_buscaAtiva_gip](https://github.com/vinileme/Automatizador_buscaAtiva_gip)
-e avisa o usuário quando há uma versão nova. Para publicar uma:
+O repositório tem um workflow do GitHub Actions
+([.github/workflows/release.yml](.github/workflows/release.yml)) que builda os 4
+binários em paralelo (Windows + macOS arm64/x64 + Linux) e cria uma Release em
+rascunho com tudo anexado. Você só precisa:
 
 1. **Subir o número da versão** em [package.json](package.json):
    ```json
    "version": "1.0.1"
    ```
-2. **Gerar os binários**:
+2. **Atualizar o [CHANGELOG.md](CHANGELOG.md)** com as mudanças.
+3. **Commitar, criar a tag e empurrar**:
    ```bash
-   npm run dist:all
+   git add package.json CHANGELOG.md
+   git commit -m "release v1.0.1"
+   git tag v1.0.1
+   git push origin main --tags
    ```
-   Vai criar `dist/Automatizador-GIP-Setup-1.0.1.exe`,
-   `dist/Automatizador-GIP-1.0.1-arm64.dmg`,
-   `dist/Automatizador-GIP-1.0.1-x64.dmg` e
-   `dist/Automatizador-GIP-1.0.1-x86_64.AppImage`.
-3. **Criar a Release no GitHub**:
-   - Vai em **Releases → Draft a new release**.
-   - Tag: `v1.0.1` (com o `v` na frente — o app aceita os dois formatos).
-   - Anexa os 4 arquivos de `dist/`.
-   - Publica.
-4. **Pronto**. Apps já instalados, na próxima vez que abrirem, vão:
-   - Mostrar um toast "Nova versão v1.0.1 disponível".
-   - Acender uma bolinha no chip de versão no canto inferior-esquerdo.
-   - Ao clicar no chip, abrir a página da release no navegador para o usuário
-     baixar e instalar manualmente.
+4. **Aguardar o workflow** (`Actions` → `Build & Release`). Em ~5-10 min ele
+   termina e cria/atualiza uma Release em **rascunho** com os 4 binários
+   anexados.
+5. **Revisar e publicar** a release pelo GitHub (botão "Publish release").
 
-Quem ainda estiver na versão antiga não é forçado a atualizar — quando quiser,
-clica no chip de versão e baixa.
+A partir do momento que ela é publicada (sai de rascunho), todo app já
+instalado vai detectar a nova versão na próxima vez que abrir:
+mostra toast "Nova versão v1.0.1 disponível" + bolinha no chip de versão.
+Clicar no chip abre a página de download.
+
+> **Não quer esperar uma tag?** Dá pra disparar o workflow manualmente em
+> `Actions → Build & Release → Run workflow`. Útil pra testar mudanças no
+> próprio workflow.
+
+### Build local (sem CI)
+
+Se preferir buildar tudo na sua máquina e subir manualmente, os scripts antigos
+continuam funcionando:
+
+```bash
+npm run dist:win     # só Windows
+npm run dist:mac     # só macOS (arm64 + x64)
+npm run dist:linux   # só Linux
+npm run dist:all     # todos
+```
+
+Aí basta criar a Release no GitHub e anexar os arquivos de `dist/` manualmente.
 
 ## Uso (passo-a-passo)
 

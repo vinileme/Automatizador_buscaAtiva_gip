@@ -31,6 +31,14 @@
   "build": {
     "appId": "com.alicerce.automatizador-gip",
     "productName": "Automatizador GIP",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "vinileme",
+        "repo": "Automatizador_buscaAtiva_gip",
+        "releaseType": "draft"
+      }
+    ],
     "asar": true,
     "asarUnpack": [
       "scripts/**/*"
