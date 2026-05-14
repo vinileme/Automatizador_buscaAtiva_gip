@@ -1,0 +1,14 @@
+node_modules/
+.env
+.DS_Store
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Build artifacts (Electron / electron-builder)
+dist/
+out/
+release/
+*.exe
+sem-presenca-todas-turmas-*.xlsx

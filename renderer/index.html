@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src 'self';" />
+    <title>Automatizador GIP</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="theme-glass">
+    <!-- Camada de "vidro líquido": gradientes vivos atrás do acrylic do SO -->
+    <div class="glow-layer" aria-hidden="true">
+      <span class="glow glow-a"></span>
+      <span class="glow glow-b"></span>
+      <span class="glow glow-c"></span>
+    </div>
+
+    <!-- Titlebar custom (arrastável) -->
+    <header class="titlebar">
+      <div class="titlebar-drag"></div>
+      <div class="brand">
+        <div class="brand-dot"></div>
+        <span class="brand-name">Automatizador de busca ativa &mdash; GIP</span>
+      </div>
+    </header>
+
+    <main class="app-shell">
+      <!-- Sidebar -->
+      <aside class="sidebar glass">
+        <nav class="nav">
+          <button class="nav-item is-active" data-tab="run" title="Executar">
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </span>
+            <span class="nav-label">Executar</span>
+          </button>
+          <button class="nav-item" data-tab="turmas" title="Turmas">
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18M3 12h18M3 17h18"/></svg>
+            </span>
+            <span class="nav-label">Turmas</span>
+          </button>
+          <button class="nav-item" data-tab="conta" title="Conta">
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </span>
+            <span class="nav-label">Conta</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <button class="version-pill" id="version-pill" type="button" title="Verificar atualizações">
+            <span class="version-dot" id="version-dot" hidden></span>
+            <span id="version-text">v0.0.0</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- Conteúdo -->
+      <section class="content">
+        <!-- ── TAB EXECUTAR ────────────────────────────────────────────── -->
+        <div class="tab" data-tab="run">
+          <header class="tab-header">
+            <h1>Executar automação</h1>
+            <p>Rode a coleta de ausentes em todas as turmas selecionadas.</p>
+          </header>
+
+          <div class="grid">
+            <div class="card glass span-2">
+              <div class="card-head">
+                <h2>Status</h2>
+                <span class="badge" id="status-badge">Pronto</span>
+              </div>
+              <div class="run-meta">
+                <div class="meta">
+                  <div class="meta-label">Conta</div>
+                  <div class="meta-value" id="meta-email">—</div>
+                </div>
+                <div class="meta">
+                  <div class="meta-label">Turmas selecionadas</div>
+                  <div class="meta-value" id="meta-turmas">0</div>
+                </div>
+                <div class="meta">
+                  <div class="meta-label">Senha salva</div>
+                  <div class="meta-value" id="meta-senha">Não</div>
+                </div>
+              </div>
+
+              <div class="run-actions">
+                <button id="btn-run"    class="btn btn-primary btn-lg">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  Iniciar automação
+                </button>
+                <button id="btn-cancel" class="btn btn-ghost"   disabled>Cancelar</button>
+                <button id="btn-open"   class="btn btn-secondary" disabled>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M10 14L21 3"/><path d="M21 14v7H3V3h7"/></svg>
+                  Abrir planilha
+                </button>
+                <button id="btn-reveal" class="btn btn-ghost"   disabled>Mostrar no Explorer</button>
+              </div>
+
+              <div class="progress" id="progress" hidden>
+                <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+                <div class="progress-label" id="progress-label">Aguardando…</div>
+              </div>
+            </div>
+
+            <div class="card glass">
+              <div class="card-head"><h2>Última planilha</h2></div>
+              <div class="planilha-info">
+                <div class="planilha-icon">
+                  <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+                </div>
+                <div class="planilha-text">
+                  <div class="planilha-nome" id="planilha-nome">Nenhuma gerada ainda</div>
+                  <div class="planilha-path" id="planilha-path">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card glass log-card">
+            <div class="card-head">
+              <h2>Log da execução</h2>
+              <button id="btn-clear-log" class="btn btn-ghost btn-sm">Limpar</button>
+            </div>
+            <div class="log" id="log"></div>
+          </div>
+        </div>
+
+        <!-- ── TAB TURMAS ─────────────────────────────────────────────── -->
+        <div class="tab" data-tab="turmas" hidden>
+          <header class="tab-header">
+            <h1>Turmas</h1>
+            <p>As turmas ficam salvas para a próxima execução automaticamente.</p>
+          </header>
+
+          <div class="card glass">
+            <div class="card-head"><h2>Adicionar turma</h2></div>
+            <form id="form-turma" class="form-row">
+              <div class="field">
+                <label for="turma-codigo">Código</label>
+                <input id="turma-codigo" type="text" inputmode="numeric" placeholder="Ex: 1558" required />
+              </div>
+              <div class="field flex-1">
+                <label for="turma-empresa">Empresa</label>
+                <input id="turma-empresa" type="text" placeholder="Ex: Eurofarma" required list="empresas-sugeridas" />
+                <datalist id="empresas-sugeridas">
+                  <option value="Eurofarma"></option>
+                  <option value="TREECORP"></option>
+                  <option value="RIO PRETO"></option>
+                  <option value="SAMIRA BRANCO"></option>
+                </datalist>
+              </div>
+              <button class="btn btn-primary" type="submit">Adicionar</button>
+            </form>
+          </div>
+
+          <div class="card glass">
+            <div class="card-head">
+              <h2>Turmas salvas <span class="count-pill" id="turmas-count">0</span></h2>
+              <button id="btn-clear-turmas" class="btn btn-ghost btn-sm">Limpar tudo</button>
+            </div>
+            <div class="turmas-list" id="turmas-list"></div>
+            <div class="empty" id="turmas-empty" hidden>
+              <p>Nenhuma turma cadastrada ainda.</p>
+              <p class="muted">Adicione acima para começar.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── TAB CONTA ──────────────────────────────────────────────── -->
+        <div class="tab" data-tab="conta" hidden>
+          <header class="tab-header">
+            <h1>Conta</h1>
+            <p>Credenciais para acessar a plataforma GIP.</p>
+          </header>
+
+          <div class="card glass">
+            <div class="card-head"><h2>Login Google</h2></div>
+            <form id="form-conta" class="form-grid">
+              <div class="field">
+                <label for="email">E-mail</label>
+                <input id="email" type="email" autocomplete="email" placeholder="seu@email.com" />
+              </div>
+              <div class="field">
+                <label for="senha">Senha</label>
+                <div class="password-wrap">
+                  <input id="senha" type="password" autocomplete="current-password" placeholder="••••••••" />
+                  <button type="button" class="btn-icon" id="btn-toggle-senha" aria-label="Mostrar senha">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
+                <small class="hint" id="senha-hint">A senha é criptografada localmente (DPAPI / Keychain).</small>
+              </div>
+
+              <div class="field switch-field">
+                <label class="switch">
+                  <input type="checkbox" id="manual-google" />
+                  <span class="switch-slider"></span>
+                </label>
+                <div>
+                  <div>Login manual</div>
+                  <small class="hint">Eu só clico no botão Google; você preenche o e-mail e senha.</small>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Salvar</button>
+                <button class="btn btn-ghost"   type="button" id="btn-clear-senha">Remover senha salva</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Créditos globais (fixo no rodapé central, visível em todas as abas) -->
+        <footer class="app-credits">desenvolvido por @psicopodio e @ovinileme</footer>
+      </section>
+    </main>
+
+    <!-- Toast -->
+    <div class="toast" id="toast" hidden></div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

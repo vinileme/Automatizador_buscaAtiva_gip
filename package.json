@@ -1,0 +1,87 @@
+{
+  "name": "automatizador-gip",
+  "productName": "Automatizador GIP",
+  "version": "1.0.0",
+  "description": "App desktop (Electron) para automatizar a coleta de presenças no GIP/Eduquest.",
+  "private": true,
+  "main": "electron/main.cjs",
+  "author": "Stephanie / automatizador-gip",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "gip": "node scripts/gip-presencas.mjs",
+    "gip:codegen": "playwright codegen https://gip.eduquest.dev/",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win --x64",
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux",
+    "dist:all": "electron-builder -mwl",
+    "postinstall": "electron-builder install-app-deps || true"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "exceljs": "^4.4.0",
+    "playwright": "^1.52.0"
+  },
+  "devDependencies": {
+    "electron": "^33.4.11",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.alicerce.automatizador-gip",
+    "productName": "Automatizador GIP",
+    "asar": true,
+    "asarUnpack": [
+      "scripts/**/*"
+    ],
+    "files": [
+      "electron/**/*",
+      "renderer/**/*",
+      "scripts/**/*",
+      "package.json",
+      "!**/.DS_Store",
+      "!**/*.xlsx",
+      "!**/.env*",
+      "!node_modules/playwright-core/.local-browsers/**",
+      "!node_modules/playwright/.local-browsers/**"
+    ],
+    "extraMetadata": {
+      "main": "electron/main.cjs"
+    },
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] }
+      ],
+      "artifactName": "Automatizador-GIP-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Automatizador GIP"
+    },
+    "mac": {
+      "target": [
+        { "target": "dmg", "arch": ["arm64", "x64"] }
+      ],
+      "category": "public.app-category.productivity",
+      "identity": null,
+      "artifactName": "Automatizador-GIP-${version}-${arch}.${ext}"
+    },
+    "linux": {
+      "target": [
+        { "target": "AppImage", "arch": ["x64"] }
+      ],
+      "category": "Utility",
+      "synopsis": "Automatizador de busca ativa - GIP",
+      "description": "App para automatizar a coleta de alunos sem presença no GIP/Eduquest.",
+      "artifactName": "Automatizador-GIP-${version}-${arch}.${ext}"
+    },
+    "directories": {
+      "output": "dist"
+    }
+  }
+}
