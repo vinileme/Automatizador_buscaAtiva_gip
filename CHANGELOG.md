@@ -27,6 +27,9 @@ e o projeto segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - **GitHub Releases** do CI criadas já **publicadas** (`releaseType: release`) para o
   app enxergar `/releases/latest` e avisar usuários instalados.
 - Toast de **conclusão** alinhado ao fluxo atual da planilha.
+- **CI (GitHub Actions)**: corrige `npm ci` no Ubuntu/Windows/macOS ao fixar `@emnapi/core`
+  e `@emnapi/runtime` em `devDependencies` e usar **Node.js 22** no workflow (Vitest /
+  pacotes WASM exigiam lock/npm compatível).
 
 ### Distribuído
 

@@ -45,7 +45,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          # Node ≥ 22 usa npm novo o bastante para `npm ci` com lock atual; Vitest/Rolldown
+          # também declarou engines próximos a 20.19+/22..
+          node-version: "22"
           cache: "npm"
 
       - name: Install dependencies

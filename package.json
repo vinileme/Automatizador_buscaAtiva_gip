@@ -28,6 +28,8 @@
     "playwright": "^1.52.0"
   },
   "devDependencies": {
+    "@emnapi/core": "1.10.0",
+    "@emnapi/runtime": "1.10.0",
     "electron": "^33.4.11",
     "electron-builder": "^25.1.8",
     "png2icons": "^2.0.1",
