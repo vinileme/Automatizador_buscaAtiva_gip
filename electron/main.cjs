@@ -151,9 +151,23 @@ async function checarUltimaRelease() {
 // ── janela ────────────────────────────────────────────────────────────────────
 let mainWindow = null;
 
+function resolverIconePath() {
+  // Em dev fica em <repo>/build/icon.png. Empacotado fica dentro de app.asar
+  // no mesmo caminho relativo, pois "build/icon.png" está incluído em files[].
+  const candidatos = [
+    path.join(__dirname, "..", "build", "icon.png"),
+    path.join(process.resourcesPath || "", "app.asar", "build", "icon.png"),
+  ];
+  for (const c of candidatos) {
+    try { if (fs.existsSync(c)) return c; } catch {}
+  }
+  return undefined;
+}
+
 function criarJanela() {
   const settings = lerSettings();
   const { width = 1100, height = 760 } = settings.janela ?? {};
+  const iconPath = resolverIconePath();
 
   mainWindow = new BrowserWindow({
     width,
@@ -161,6 +175,7 @@ function criarJanela() {
     minWidth:  680,
     minHeight: 540,
     show: false,
+    icon: iconPath,
     backgroundColor: process.platform === "darwin" ? "#00000000" : "#1A1B22",
     // Estilo Apple "Liquid Glass": titlebar embutida sem moldura tradicional.
     titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "hidden",
@@ -335,6 +350,15 @@ function registrarIPC() {
 
 // ── lifecycle ─────────────────────────────────────────────────────────────────
 app.whenReady().then(() => {
+  // No macOS, em dev (app não empacotado), o dock ainda mostra o ícone padrão
+  // do Electron — forçamos o ícone correto via app.dock.setIcon.
+  if (process.platform === "darwin" && !app.isPackaged && app.dock) {
+    const iconDev = resolverIconePath();
+    if (iconDev) {
+      try { app.dock.setIcon(iconDev); } catch {}
+    }
+  }
+
   registrarIPC();
   criarJanela();
 

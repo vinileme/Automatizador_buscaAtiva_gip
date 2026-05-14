@@ -11,6 +11,7 @@
     "dev": "electron .",
     "gip": "node scripts/gip-presencas.mjs",
     "gip:codegen": "playwright codegen https://gip.eduquest.dev/",
+    "build:icons": "node scripts/generate-icons.mjs",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
     "dist:win": "electron-builder --win --x64",
@@ -26,7 +27,8 @@
   },
   "devDependencies": {
     "electron": "^33.4.11",
-    "electron-builder": "^25.1.8"
+    "electron-builder": "^25.1.8",
+    "png2icons": "^2.0.1"
   },
   "build": {
     "appId": "com.alicerce.automatizador-gip",
@@ -47,6 +49,7 @@
       "electron/**/*",
       "renderer/**/*",
       "scripts/**/*",
+      "build/icon.png",
       "package.json",
       "!**/.DS_Store",
       "!**/*.xlsx",
@@ -59,8 +62,14 @@
     },
     "win": {
       "target": [
-        { "target": "nsis", "arch": ["x64"] }
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
       ],
+      "icon": "build/icon.ico",
       "artifactName": "Automatizador-GIP-Setup-${version}.${ext}"
     },
     "nsis": {
@@ -69,27 +78,44 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Automatizador GIP"
+      "shortcutName": "Automatizador GIP",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico"
     },
     "mac": {
       "target": [
-        { "target": "dmg", "arch": ["arm64", "x64"] }
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
       ],
       "category": "public.app-category.productivity",
       "identity": null,
+      "icon": "build/icon.icns",
       "artifactName": "Automatizador-GIP-${version}-${arch}.${ext}"
     },
     "linux": {
       "target": [
-        { "target": "AppImage", "arch": ["x64"] }
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
       ],
       "category": "Utility",
       "synopsis": "Automatizador de busca ativa - GIP",
       "description": "App para automatizar a coleta de alunos sem presença no GIP/Eduquest.",
+      "icon": "build/icon.png",
       "artifactName": "Automatizador-GIP-${version}-${arch}.${ext}"
     },
     "directories": {
-      "output": "dist"
+      "output": "dist",
+      "buildResources": "build"
     }
   }
 }
