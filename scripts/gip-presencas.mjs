@@ -16,6 +16,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 import ExcelJS from "exceljs";
+import {
+  escapeRegex,
+  montarLinhaResumo,
+  deveGerarLinhasDetalhe,
+} from "./lib/gip-presencas-helpers.mjs";
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Lista padrão de turmas (usada quando rodando via CLI sem config)
@@ -61,10 +66,6 @@ const TIMEOUTS = {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const isVisible = (locator) => locator.isVisible().catch(() => false);
-
-function escapeRegex(str) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Login Google (botão GSI dentro de iframe ou na própria página)
@@ -405,22 +406,24 @@ async function tentarBuscaTurma(page, turma, retryEsperaMs) {
     .catch(() => false);
 }
 
-async function buscarTurmaComRetry(page, turma, { maxTentativas, retryEsperaMs, log }) {
+/**
+ * Busca uma turma no diretório. Retorna `true` quando a linha do CO-código ficou visível.
+ * Na última falha apenas retorna `false` (fluxo deve seguir para a próxima turma).
+ */
+async function encontrarTurmaComRetry(page, turma, { maxTentativas, retryEsperaMs, log }) {
   for (let n = 1; n <= maxTentativas; n++) {
     log.info(
       `[${turma.empresa}] Buscando turma "${turma.codigo}" (tentativa ${n}/${maxTentativas})…`
     );
     if (await tentarBuscaTurma(page, turma, retryEsperaMs)) {
       log.info(`[${turma.empresa}] Turma ${turma.codigo} encontrada.`);
-      return;
+      return true;
     }
     if (n === maxTentativas) break;
     log.warn("Sem resultado. Atualizando a página e tentando novamente…");
     await page.reload({ waitUntil: "domcontentloaded" });
   }
-  throw new Error(
-    `Turma não encontrada após ${maxTentativas} tentativas (código ${turma.codigo}).`
-  );
+  return false;
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -712,21 +715,16 @@ async function salvarExcelCombinado(resultados, { excelPath, log }) {
 
   const dataHora = new Date().toLocaleString("pt-BR");
 
-  for (const { turma, alunos, erro, semAula } of resultados) {
-    resumoSheet.addRow({
-      empresa:  turma.empresa,
-      turma:    turma.codigo,
-      total:    erro ? "ERRO" : semAula ? "-" : alunos.length,
-      status:   erro ? erro : semAula ? "— Nenhuma aula encontrada" : alunos.length === 0 ? "✓ Todos presentes" : `${alunos.length} ausente(s)`,
-      dataHora,
-    });
+  for (const resultado of resultados) {
+    resumoSheet.addRow(montarLinhaResumo(resultado, dataHora));
   }
   resumoSheet.autoFilter = { from: "A1", to: "E1" };
 
   // Uma aba por empresa com os alunos ausentes + telefones
   const empresasVistas = new Set();
-  for (const { turma, alunos, erro } of resultados) {
-    if (erro || alunos.length === 0) continue;
+  for (const resultado of resultados) {
+    if (!deveGerarLinhasDetalhe(resultado)) continue;
+    const { turma, alunos } = resultado;
 
     const cores = EMPRESA_COLORS[turma.empresa] ?? DEFAULT_COLOR;
     const nomesAba = turma.empresa.slice(0, 31);
@@ -792,26 +790,33 @@ async function verificarNenhumaAula(page) {
 async function processarTurma(page, turma, opts) {
   const { log } = opts;
   try {
-    await buscarTurmaComRetry(page, turma, opts);
+    const encontrada = await encontrarTurmaComRetry(page, turma, opts);
+    if (!encontrada) {
+      log.warn(
+        `[${turma.empresa}] Turma ${turma.codigo} não encontrada após ${opts.maxTentativas} tentativa(s). Sem lista de chamadas — próxima turma.`
+      );
+      return { turma, alunos: [], erro: null, semAula: false, semListaChamadas: true };
+    }
+
     await abrirTurmaSelecionada(page, turma);
     await abrirPresencas(page);
 
     if (await verificarNenhumaAula(page)) {
       log.warn(`[${turma.empresa}] Turma ${turma.codigo}: nenhuma aula encontrada — pulando.`);
-      return { turma, alunos: [], erro: null, semAula: true };
+      return { turma, alunos: [], erro: null, semAula: true, semListaChamadas: false };
     }
 
     await selecionarHorarioEAluno(page, log);
 
     if (await verificarNenhumaAula(page)) {
       log.warn(`[${turma.empresa}] Turma ${turma.codigo}: nenhuma aula encontrada após selecionar horário — pulando.`);
-      return { turma, alunos: [], erro: null, semAula: true };
+      return { turma, alunos: [], erro: null, semAula: true, semListaChamadas: false };
     }
 
     const nomes = await coletarAlunosSemPresenca(page, turma, log);
 
     if (nomes.length === 0) {
-      return { turma, alunos: [], erro: null, semAula: false };
+      return { turma, alunos: [], erro: null, semAula: false, semListaChamadas: false };
     }
 
     let alunos;
@@ -822,10 +827,10 @@ async function processarTurma(page, turma, opts) {
       alunos = nomes.map((nome) => ({ nome, telefone: "" }));
     }
 
-    return { turma, alunos, erro: null, semAula: false };
+    return { turma, alunos, erro: null, semAula: false, semListaChamadas: false };
   } catch (err) {
     log.error(`[${turma.empresa}] Erro na turma ${turma.codigo}: ${err.message}`);
-    return { turma, alunos: [], erro: err.message, semAula: false };
+    return { turma, alunos: [], erro: err.message, semAula: false, semListaChamadas: false };
   }
 }
 
@@ -963,9 +968,11 @@ export async function runAutomation(options) {
     log.info(`\n${"═".repeat(60)}`);
     log.info("RESUMO FINAL");
     log.info("═".repeat(60));
-    for (const { turma, alunos, erro, semAula } of resultados) {
+    for (const { turma, alunos, erro, semAula, semListaChamadas } of resultados) {
       if (erro) {
         log.error(`  ✗ [${turma.empresa}] Turma ${turma.codigo}: ERRO — ${erro}`);
+      } else if (semListaChamadas) {
+        log.warn(`  - [${turma.empresa}] Turma ${turma.codigo}: turma não encontrada — sem lista de chamadas`);
       } else if (semAula) {
         log.warn(`  - [${turma.empresa}] Turma ${turma.codigo}: nenhuma aula encontrada (pulada)`);
       } else if (alunos.length === 0) {
@@ -976,12 +983,13 @@ export async function runAutomation(options) {
     }
     log.info("═".repeat(60));
 
-    const algumAusente = resultados.some((r) => r.alunos.length > 0);
-    let pathSalvo = null;
-    if (algumAusente) {
+    let pathSalvo;
+    try {
       pathSalvo = await salvarExcelCombinado(resultados, { excelPath, log });
-    } else {
-      log.info("Nenhum ausente encontrado em nenhuma turma — planilha não gerada.");
+    } catch (err) {
+      log.error(`Falha ao salvar planilha: ${err?.message ?? err}`);
+      emit("erro_planilha", { message: err?.message ?? String(err) });
+      throw err;
     }
 
     emit("fim", { excelPath: pathSalvo, resultados });

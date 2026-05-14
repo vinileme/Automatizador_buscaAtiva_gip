@@ -334,6 +334,14 @@ button { font-family: inherit; }
   letter-spacing: -0.01em;
   color: var(--text);
 }
+.card-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
 
 .badge {
   font-size: 11px;

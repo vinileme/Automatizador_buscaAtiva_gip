@@ -94,8 +94,8 @@ Arch, Debian, etc.).
 
 O repositório tem um workflow do GitHub Actions
 ([.github/workflows/release.yml](.github/workflows/release.yml)) que builda os 4
-binários em paralelo (Windows + macOS arm64/x64 + Linux) e cria uma Release em
-rascunho com tudo anexado. Você só precisa:
+binários em paralelo (Windows + macOS arm64/x64 + Linux) e **publica** uma
+Release no GitHub (não fica em rascunho), com tudo anexado. Você só precisa:
 
 1. **Subir o número da versão** em [package.json](package.json):
    ```json
@@ -110,14 +110,16 @@ rascunho com tudo anexado. Você só precisa:
    git push origin main --tags
    ```
 4. **Aguardar o workflow** (`Actions` → `Build & Release`). Em ~5-10 min ele
-   termina e cria/atualiza uma Release em **rascunho** com os 4 binários
-   anexados.
-5. **Revisar e publicar** a release pelo GitHub (botão "Publish release").
+   termina e a Release fica **publicada**; o endpoint `releases/latest` do
+   GitHub passa a apontar para ela.
 
-A partir do momento que ela é publicada (sai de rascunho), todo app já
-instalado vai detectar a nova versão na próxima vez que abrir:
-mostra toast "Nova versão v1.0.1 disponível" + bolinha no chip de versão.
-Clicar no chip abre a página de download.
+Com isso, todo app já instalado tende a detectar a nova versão na próxima vez
+que abrir (se a rede permitir): toast "Nova versão … disponível" + bolinha no
+chip de versão. Clicar no chip abre a página de download.
+
+Se quiser **só rascunho** em um build local, defina `EP_DRAFT=true` ao rodar o
+`electron-builder` (veja documentação do electron-builder); o CI usa `release`
+no [package.json](package.json).
 
 > **Não quer esperar uma tag?** Dá pra disparar o workflow manualmente em
 > `Actions → Build & Release → Run workflow`. Útil pra testar mudanças no

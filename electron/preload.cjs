@@ -40,6 +40,9 @@ contextBridge.exposeInMainWorld("api", {
   revealSpreadsheet: (p) => ipcRenderer.invoke("spreadsheet:reveal", p),
   pickSpreadsheet:   ()  => ipcRenderer.invoke("spreadsheet:pick"),
 
+  /** Abre `%APPDATA%/…/Automatizador GIP/logs` no Explorer/Finder */
+  openLogsFolder: () => ipcRenderer.invoke("logs:openFolder"),
+
   // updates
   checkUpdates: ()    => ipcRenderer.invoke("updates:check"),
   openReleases: (url) => ipcRenderer.invoke("updates:openReleases", url),

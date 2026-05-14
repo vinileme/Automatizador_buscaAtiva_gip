@@ -7,6 +7,13 @@ e o projeto segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ## [Não publicado]
 
+### Alterado
+
+- CI / `electron-builder`: releases no GitHub passam a ser **publicadas**
+  (`releaseType: release`), para o app detectar atualização via `/releases/latest`.
+- Toast ao concluir automação: mensagem alinhada ao fluxo em que a planilha é
+  sempre gerada em caso de sucesso; fallback só se o caminho não vier.
+
 ## [1.0.0] - 2026-05-14
 
 ### Adicionado
@@ -29,8 +36,8 @@ e o projeto segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
   bolinha de aviso na sidebar + toast quando há nova versão; clique abre a página
   de download.
 - **CLI antiga preservada** (`npm run gip`) para uso via cron/terminal.
-- **Workflow do GitHub Actions** que builda + publica releases nos 3 SOs ao
-  empurrar uma tag `v*`.
+- **Workflow do GitHub Actions** que builda **e publica** releases nos 3 SOs ao
+  empurrar uma tag `v*` (release não-rascunho para o check de atualização no app).
 
 ### Distribuído
 

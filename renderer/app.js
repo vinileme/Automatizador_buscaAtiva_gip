@@ -32,6 +32,7 @@ const els = {
   planilhaPath: $("#planilha-path"),
 
   log:         $("#log"),
+  btnOpenLogs: $("#btn-open-logs"),
   btnClearLog: $("#btn-clear-log"),
 
   // turmas
@@ -291,12 +292,16 @@ function finalizar(payload) {
   if (payload.ok) {
     setStatus("Concluído", "is-ok");
     setProgresso(state.totalTurmas, state.totalTurmas, "Concluído");
-    if (payload.resultado?.excelPath) {
-      state.settings.ultimaPlanilha = payload.resultado.excelPath;
+    const excelPath = payload.resultado?.excelPath;
+    if (excelPath) {
+      state.settings.ultimaPlanilha = excelPath;
       atualizarPlanilhaUI();
-      toast("Planilha gerada com sucesso.", "ok");
+      toast("Automatização concluída. Planilha gerada.", "ok");
     } else {
-      toast("Execução concluída — nenhuma planilha gerada.", "ok");
+      toast(
+        "Automatização concluída, mas o caminho da planilha não foi retornado. Use o botão Pasta de logs ou o painel ao lado.",
+        "default"
+      );
     }
   } else {
     setStatus("Erro", "is-error");
@@ -307,6 +312,15 @@ function finalizar(payload) {
 // ── log ──────────────────────────────────────────────────────────────────────
 function limparLog() {
   els.log.innerHTML = "";
+}
+
+async function abrirPastaLogs() {
+  const r = await window.api.openLogsFolder();
+  if (!r.ok) {
+    toast(r.reason || "Não foi possível abrir a pasta de logs.", "error");
+    return;
+  }
+  toast("Pasta de logs aberta.", "ok");
 }
 
 function appendLog(evt) {
@@ -393,6 +407,7 @@ function registrarListeners() {
   els.btnRun.addEventListener("click", iniciarAutomacao);
   els.btnCancel.addEventListener("click", cancelarAutomacao);
   els.btnClearLog.addEventListener("click", limparLog);
+  els.btnOpenLogs.addEventListener("click", abrirPastaLogs);
 
   els.btnOpen.addEventListener("click", async () => {
     const r = await window.api.openSpreadsheet();

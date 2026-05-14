@@ -11,6 +11,7 @@
 const { app, BrowserWindow, ipcMain, shell, safeStorage, dialog } = require("electron");
 const path = require("node:path");
 const fs  = require("node:fs");
+const { appendAppLog } = require("./file-logger.cjs");
 
 // ── caminhos persistentes ──────────────────────────────────────────────────────
 const userDataDir   = () => app.getPath("userData");
@@ -237,6 +238,16 @@ function resolverAutomationPath() {
 async function iniciarAutomacao(input) {
   if (runAtual) throw new Error("Já existe uma execução em andamento.");
 
+  appendAppLog(app, "info", "[automation] Início solicitado pela UI.", {
+    turmas: Array.isArray(input.turmas) ? input.turmas.length : 0,
+    manualGoogle: !!input.manualGoogle,
+  });
+
+  const exportsDir = path.join(userDataDir(), "exports");
+  fs.mkdirSync(exportsDir, { recursive: true });
+  const isoSafe = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+  const excelPath = path.join(exportsDir, `sem-presenca-todas-turmas-${isoSafe}.xlsx`);
+
   // Importação dinâmica do script ESM (em prod ele é desempacotado via asarUnpack).
   const automationPath = resolverAutomationPath();
   // pathToFileURL trata espaços e Windows paths corretamente.
@@ -247,6 +258,16 @@ async function iniciarAutomacao(input) {
   const controller = new AbortController();
   const senha      = lerSenha();
 
+  const relayLog = (evt) => {
+    enviar("automation:log", evt);
+    appendAppLog(
+      app,
+      evt.level === "error" ? "error" : evt.level === "warn" ? "warn" : "info",
+      evt.message ?? "",
+      { tipo: "automation", ts: evt.timestamp }
+    );
+  };
+
   const promise = runAutomation({
     turmas: input.turmas,
     email:  input.email,
@@ -254,7 +275,8 @@ async function iniciarAutomacao(input) {
     manualGoogle: input.manualGoogle ?? false,
     headless: false,
     browser: "chrome",
-    onLog:   (evt) => enviar("automation:log",   evt),
+    excelPath,
+    onLog:   relayLog,
     onEvent: (evt) => enviar("automation:event", evt),
     signal:  controller.signal,
   })
@@ -262,10 +284,17 @@ async function iniciarAutomacao(input) {
       if (resultado.excelPath) {
         salvarSettings({ ultimaPlanilha: resultado.excelPath });
       }
+      appendAppLog(app, "info", "[automation] Concluída com sucesso.", {
+        excelPath: resultado.excelPath ?? null,
+        turmas: resultado.resultados?.length,
+      });
       enviar("automation:done", { ok: true, resultado });
       return resultado;
     })
     .catch((err) => {
+      appendAppLog(app, "error", `[automation] Falha na execução: ${err?.message ?? String(err)}`, {
+        stack: err?.stack ?? null,
+      });
       enviar("automation:done", { ok: false, error: err?.message ?? String(err) });
       throw err;
     })
@@ -332,10 +361,21 @@ function registrarIPC() {
     return { ok: true, path: r.filePaths[0] };
   });
 
+  ipcMain.handle("logs:openFolder", async () => {
+    const dir = path.join(userDataDir(), "logs");
+    fs.mkdirSync(dir, { recursive: true });
+    const err = await shell.openPath(dir);
+    if (err) return { ok: false, reason: err };
+    return { ok: true, path: dir };
+  });
+
   ipcMain.handle("app:info", () => ({
     versao: app.getVersion(),
     plataforma: process.platform,
     safeStorage: safeStorage.isEncryptionAvailable(),
+    dadosUsuario: userDataDir(),
+    pastaExports: path.join(userDataDir(), "exports"),
+    pastaLogs: path.join(userDataDir(), "logs"),
   }));
 
   // ── updates ──────────────────────────────────────────────────────────────
@@ -350,6 +390,10 @@ function registrarIPC() {
 
 // ── lifecycle ─────────────────────────────────────────────────────────────────
 app.whenReady().then(() => {
+  appendAppLog(app, "info", `[app] Sessão iniciada v${app.getVersion()}`, {
+    platform: process.platform,
+    empacotado: app.isPackaged,
+  });
   // No macOS, em dev (app não empacotado), o dock ainda mostra o ícone padrão
   // do Electron — forçamos o ícone correto via app.dock.setIcon.
   if (process.platform === "darwin" && !app.isPackaged && app.dock) {

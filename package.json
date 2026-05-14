@@ -9,6 +9,8 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron .",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "gip": "node scripts/gip-presencas.mjs",
     "gip:codegen": "playwright codegen https://gip.eduquest.dev/",
     "build:icons": "node scripts/generate-icons.mjs",
@@ -28,7 +30,8 @@
   "devDependencies": {
     "electron": "^33.4.11",
     "electron-builder": "^25.1.8",
-    "png2icons": "^2.0.1"
+    "png2icons": "^2.0.1",
+    "vitest": "^4.1.6"
   },
   "build": {
     "appId": "com.alicerce.automatizador-gip",
@@ -38,7 +41,7 @@
         "provider": "github",
         "owner": "vinileme",
         "repo": "Automatizador_buscaAtiva_gip",
-        "releaseType": "draft"
+        "releaseType": "release"
       }
     ],
     "asar": true,

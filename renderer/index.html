@@ -122,7 +122,10 @@
           <div class="card glass log-card">
             <div class="card-head">
               <h2>Log da execução</h2>
-              <button id="btn-clear-log" class="btn btn-ghost btn-sm">Limpar</button>
+              <div class="card-head-actions">
+                <button id="btn-open-logs" class="btn btn-ghost btn-sm" type="button" title="Abre a pasta de arquivos de log no Explorer ou Finder">Pasta de logs</button>
+                <button id="btn-clear-log" class="btn btn-ghost btn-sm" type="button">Limpar</button>
+              </div>
             </div>
             <div class="log" id="log"></div>
           </div>

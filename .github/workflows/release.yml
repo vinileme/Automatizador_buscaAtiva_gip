@@ -4,9 +4,10 @@
 #   1) bump da "version" no package.json (ex.: 1.0.0 → 1.0.1).
 #   2) git add . && git commit -m "release v1.0.1"
 #   3) git tag v1.0.1 && git push origin main --tags
-#   → o workflow buildaria nos 3 SOs em paralelo e cria/atualiza uma
-#     Release em rascunho no GitHub com os 4 binários anexados.
-#   4) Você revisa a release no GitHub e clica em "Publish".
+#   → o workflow builda nos 3 SOs em paralelo e publica uma Release no GitHub
+#     (não-rascunho), com os binários anexados — `releases/latest` passa a
+#     apontar para ela e o app notifica quem já instalou.
+#   4) Opcional: conferir a release em GitHub e as notas de versão.
 
 name: Build & Release
 
